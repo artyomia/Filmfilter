@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trình Chỉnh Sửa Ảnh Web</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for better aesthetics if needed */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2d3748; /* gray-800 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4a5568; /* gray-600 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #718096; /* gray-500 */
+        }
+        .control-panel {
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        canvas {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 0.5rem; /* rounded-lg */
+            border: 1px solid #4A5568; /* gray-600 */
+        }
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px; /* Ensure container has some height */
+            background-color: #2d3748; /* gray-800 */
+            border-radius: 0.5rem;
+        }
+         input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #3b82f6; /* blue-500 */
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #3b82f6; /* blue-500 */
+            cursor: pointer;
+            border-radius: 50%;
+            border: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 flex flex-col items-center justify-center min-h-screen p-4">
+
+    <div class="bg-gray-800 p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-5xl">
+        <h1 class="text-3xl font-bold text-center mb-8 text-blue-400">Trình Chỉnh Sửa Ảnh</h1>
+
+        <div class="flex flex-col lg:flex-row gap-6">
+            <div class="lg:w-1/3 bg-gray-700 p-6 rounded-lg shadow-lg control-panel">
+                <div class="space-y-6">
+                    <div>
+                        <label for="imageUpload" class="block text-sm font-medium text-gray-300 mb-2">Chọn ảnh:</label>
+                        <input type="file" id="imageUpload" accept="image/*" class="block w-full text-sm text-gray-400
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-lg file:border-0
+                            file:text-sm file:font-semibold
+                            file:bg-blue-500 file:text-white
+                            hover:file:bg-blue-600 cursor-pointer">
+                    </div>
+
+                    <div>
+                        <label for="brightnessSlider" class="block text-sm font-medium text-gray-300">Độ sáng: <span id="brightnessValue" class="font-mono">0</span></label>
+                        <input type="range" id="brightnessSlider" min="-100" max="100" value="0" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-blue-500 disabled:opacity-50" disabled>
+                    </div>
+
+                    <div>
+                        <label for="contrastSlider" class="block text-sm font-medium text-gray-300">Độ tương phản: <span id="contrastValue" class="font-mono">0</span></label>
+                        <input type="range" id="contrastSlider" min="-100" max="100" value="0" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-blue-500 disabled:opacity-50" disabled>
+                    </div>
+
+                    <div>
+                        <label for="filterSelect" class="block text-sm font-medium text-gray-300">Bộ lọc màu:</label>
+                        <select id="filterSelect" class="mt-1 block w-full py-2 px-3 border border-gray-600 bg-gray-700 text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:opacity-50" disabled>
+                            <option value="none">Không có</option>
+                            <option value="kodak_classic">Kodak Classic</option>
+                            <option value="fuji_vivid">Fuji Vivid</option>
+                            <option value="kodak_portrait">Kodak Portrait</option>
+                            <option value="fuji_portrait">Fuji Portrait</option>
+                            <option value="grayscale">Trắng đen</option>
+                            <option value="sepia">Nâu đỏ</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row gap-3 pt-4">
+                        <button id="resetButton" class="w-full sm:w-auto flex-1 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg shadow disabled:opacity-50" disabled>Đặt lại</button>
+                        <button id="downloadButton" class="w-full sm:w-auto flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow disabled:opacity-50" disabled>Tải xuống</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:w-2/3 flex justify-center items-center bg-gray-700 p-1 rounded-lg shadow-lg canvas-container">
+                <canvas id="imageCanvas" class="rounded-md"></canvas>
+                <p id="canvasPlaceholder" class="text-gray-400 text-center">Vui lòng tải ảnh lên để bắt đầu chỉnh sửa.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Lấy các phần tử DOM
+        const imageUpload = document.getElementById('imageUpload');
+        const brightnessSlider = document.getElementById('brightnessSlider');
+        const contrastSlider = document.getElementById('contrastSlider');
+        const filterSelect = document.getElementById('filterSelect');
+        const resetButton = document.getElementById('resetButton');
+        const downloadButton = document.getElementById('downloadButton');
+        const canvas = document.getElementById('imageCanvas');
+        const ctx = canvas.getContext('2d');
+        const brightnessValueDisplay = document.getElementById('brightnessValue');
+        const contrastValueDisplay = document.getElementById('contrastValue');
+        const canvasPlaceholder = document.getElementById('canvasPlaceholder');
+
+        let originalImageData = null; // Lưu trữ dữ liệu ảnh gốc
+        let currentImage = null; // Lưu trữ đối tượng Image hiện tại
+
+        // Hàm tiện ích: giới hạn giá trị trong khoảng min-max
+        function clamp(value, min = 0, max = 255) {
+            return Math.min(Math.max(value, min), max);
+        }
+
+        // Các bộ lọc màu (đây là các phép xấp xỉ đơn giản)
+        const filters = {
+            'none': (r, g, b) => [r, g, b],
+            'kodak_classic': (r, g, b) => { // Ấm, giàu màu, hơi tăng đỏ và vàng
+                let nr = clamp(r * 1.15 + 10);
+                let ng = clamp(g * 1.08 + 5);
+                let nb = clamp(b * 0.92);
+                const avg = (nr + ng + nb) / 3; // Thêm chút ấm tổng thể
+                nr = clamp(nr + (nr > avg ? (nr - avg) * 0.05 : 0) + 5);
+                ng = clamp(ng + (ng > avg ? (ng - avg) * 0.05 : 0) + 3);
+                return [nr, ng, nb];
+            },
+            'fuji_vivid': (r, g, b) => { // Sống động, tăng cường xanh lá và xanh dương, hơi lạnh
+                const avg = (r + g + b) / 3;
+                const satBoost = 1.3;
+                let nr = clamp(avg + (r - avg) * satBoost);
+                let ng = clamp(avg + (g - avg) * satBoost);
+                let nb = clamp(avg + (b - avg) * satBoost);
+                ng = clamp(ng * 1.15);
+                nb = clamp(nb * 1.20);
+                nr = clamp(nr * 0.93);
+                return [nr, ng, nb];
+            },
+            'kodak_portrait': (r, g, b) => { // Mềm mại, tông màu da đẹp, ấm
+                let nr = clamp(r * 1.08 + 10);
+                let ng = clamp(g * 1.04 + 5);
+                let nb = clamp(b * 0.97 - 5);
+                const avg = (nr + ng + nb) / 3; // Hơi giảm bão hòa
+                const satFactor = 0.92;
+                nr = clamp(avg + (nr - avg) * satFactor);
+                ng = clamp(avg + (ng - avg) * satFactor);
+                nb = clamp(avg + (nb - avg) * satFactor);
+                return [nr, ng, nb];
+            },
+            'fuji_portrait': (r, g, b) => { // Tông màu da tự nhiên, xanh lá/dương đẹp, hơi lạnh/minty
+                const avg = (r + g + b) / 3;
+                const sat = 0.93;
+                let nr = avg + (r - avg) * sat;
+                let ng = avg + (g - avg) * sat;
+                let nb = avg + (b - avg) * sat;
+                ng = clamp(ng * 1.08);
+                nb = clamp(nb * 1.12);
+                nr = clamp(nr * 0.95);
+                return [nr, ng, nb];
+            },
+            'grayscale': (r, g, b) => {
+                const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+                return [gray, gray, gray];
+            },
+            'sepia': (r, g, b) => {
+                const sr = clamp(r * 0.393 + g * 0.769 + b * 0.189);
+                const sg = clamp(r * 0.349 + g * 0.686 + b * 0.168);
+                const sb = clamp(r * 0.272 + g * 0.534 + b * 0.131);
+                return [sr, sg, sb];
+            }
+        };
+
+        // Hàm áp dụng các điều chỉnh
+        function applyAdjustments() {
+            if (!originalImageData) return;
+
+            const brightness = parseInt(brightnessSlider.value);
+            const contrast = parseInt(contrastSlider.value);
+            const filterName = filterSelect.value;
+
+            // Tạo một ImageData mới từ dữ liệu gốc để tránh thay đổi chồng chất
+            const newImageData = ctx.createImageData(originalImageData.width, originalImageData.height);
+            const data = newImageData.data;
+            const originalData = originalImageData.data;
+
+            const contrastFactor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+
+            for (let i = 0; i < originalData.length; i += 4) {
+                let r = originalData[i];
+                let g = originalData[i + 1];
+                let b = originalData[i + 2];
+                const a = originalData[i + 3];
+
+                // 1. Áp dụng độ sáng
+                r = clamp(r + brightness);
+                g = clamp(g + brightness);
+                b = clamp(b + brightness);
+
+                // 2. Áp dụng độ tương phản
+                r = clamp(contrastFactor * (r - 128) + 128);
+                g = clamp(contrastFactor * (g - 128) + 128);
+                b = clamp(contrastFactor * (b - 128) + 128);
+                
+                // 3. Áp dụng bộ lọc màu
+                if (filters[filterName]) {
+                    [r, g, b] = filters[filterName](r, g, b);
+                }
+
+                data[i] = r;
+                data[i + 1] = g;
+                data[i + 2] = b;
+                data[i + 3] = a; // Giữ nguyên kênh alpha
+            }
+            ctx.putImageData(newImageData, 0, 0);
+        }
+
+        // Xử lý tải ảnh lên
+        imageUpload.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    currentImage = new Image();
+                    currentImage.onload = () => {
+                        // Đặt kích thước canvas bằng kích thước ảnh
+                        canvas.width = currentImage.width;
+                        canvas.height = currentImage.height;
+                        
+                        // Vẽ ảnh gốc lên canvas
+                        ctx.drawImage(currentImage, 0, 0);
+                        
+                        // Lưu trữ dữ liệu ảnh gốc
+                        originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        
+                        // Kích hoạt các điều khiển
+                        brightnessSlider.disabled = false;
+                        contrastSlider.disabled = false;
+                        filterSelect.disabled = false;
+                        resetButton.disabled = false;
+                        downloadButton.disabled = false;
+                        canvasPlaceholder.style.display = 'none';
+                        canvas.style.display = 'block';
+
+                        // Đặt lại các giá trị điều khiển
+                        resetControls();
+                        applyAdjustments(); // Áp dụng giá trị mặc định (không thay đổi)
+                    };
+                    currentImage.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Cập nhật giá trị hiển thị và áp dụng điều chỉnh khi slider thay đổi
+        brightnessSlider.addEventListener('input', () => {
+            brightnessValueDisplay.textContent = brightnessSlider.value;
+            applyAdjustments();
+        });
+        contrastSlider.addEventListener('input', () => {
+            contrastValueDisplay.textContent = contrastSlider.value;
+            applyAdjustments();
+        });
+        filterSelect.addEventListener('change', applyAdjustments);
+
+        // Đặt lại các điều chỉnh
+        function resetControls() {
+            brightnessSlider.value = 0;
+            contrastSlider.value = 0;
+            filterSelect.value = 'none';
+            brightnessValueDisplay.textContent = '0';
+            contrastValueDisplay.textContent = '0';
+        }
+
+        resetButton.addEventListener('click', () => {
+            if (!originalImageData) return;
+            resetControls();
+            applyAdjustments(); // Vẽ lại ảnh gốc với các giá trị đã reset
+        });
+
+        // Tải ảnh xuống
+        downloadButton.addEventListener('click', () => {
+            if (!originalImageData) return;
+            const dataURL = canvas.toDataURL('image/png'); // Hoặc 'image/jpeg'
+            const link = document.createElement('a');
+            link.href = dataURL;
+            link.download = 'anh_da_chinh_sua.png'; // Tên file tải về
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // Khởi tạo trạng thái ban đầu của canvas
+        canvas.style.display = 'none';
+        canvasPlaceholder.style.display = 'block';
+
+    </script>
+</body>
+</html>
