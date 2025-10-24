@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ký túc xá JSC - Quản lý chuyên gia</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="login-overlay" class="overlay">
+        <div class="overlay-card">
+            <h1 data-i18n="loginTitle">Chọn quyền truy cập</h1>
+            <p data-i18n="loginHint">Chọn vai trò phù hợp để tiếp tục sử dụng hệ thống.</p>
+            <div class="overlay-actions">
+                <button id="adminLogin" class="primary" data-i18n="loginAdmin">Đăng nhập quản trị</button>
+                <button id="guestLogin" class="secondary" data-i18n="loginGuest">Khách đặt phòng</button>
+            </div>
+        </div>
+    </div>
+
+    <header class="app-header">
+        <div class="brand-group">
+            <div class="brand-icon">🏢</div>
+            <div>
+                <h1 data-i18n="appTitle">Ký túc xá chuyên gia - JSC</h1>
+                <p data-i18n="appSubtitle">Quản lý phòng & hợp đồng thuê hiệu quả</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <div class="language-switcher" role="group" aria-label="Language selector">
+                <button data-lang="vi" class="lang active">VI</button>
+                <button data-lang="en" class="lang">EN</button>
+            </div>
+            <button id="logoutButton" class="ghost" data-i18n="logout">Đăng xuất</button>
+        </div>
+    </header>
+
+    <main>
+        <section class="dashboard" aria-labelledby="dashboard-heading">
+            <div class="section-title">
+                <h2 id="dashboard-heading" data-i18n="dashboardTitle">Tổng quan</h2>
+                <div class="dashboard-actions">
+                    <button id="exportCsv" class="ghost" data-i18n="exportCsv">Xuất báo cáo CSV</button>
+                    <button id="resetData" class="ghost danger" data-i18n="resetData">Khôi phục dữ liệu mẫu</button>
+                </div>
+            </div>
+            <div class="stat-grid">
+                <article class="stat-card">
+                    <span class="stat-icon">🏠</span>
+                    <div>
+                        <p data-i18n="statOccupied">Phòng đang có khách</p>
+                        <h3 id="occupiedCount">0</h3>
+                    </div>
+                </article>
+                <article class="stat-card">
+                    <span class="stat-icon">⏰</span>
+                    <div>
+                        <p data-i18n="statExpiring">Phòng sắp hết hạn (7 ngày)</p>
+                        <h3 id="expiringCount">0</h3>
+                    </div>
+                </article>
+                <article class="stat-card">
+                    <span class="stat-icon">💰</span>
+                    <div>
+                        <p data-i18n="statRevenue">Doanh thu tháng này</p>
+                        <h3 id="monthlyRevenue">0₫</h3>
+                    </div>
+                </article>
+                <article class="stat-card">
+                    <span class="stat-icon">📋</span>
+                    <div>
+                        <p data-i18n="statRequests">Yêu cầu đặt phòng mới</p>
+                        <h3 id="requestCount">0</h3>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="layout-grid">
+            <section class="panel" aria-labelledby="room-status-heading">
+                <div class="section-title">
+                    <h2 id="room-status-heading" data-i18n="roomStatusTitle">Trạng thái phòng</h2>
+                    <div class="filters">
+                        <label>
+                            <span data-i18n="filterStatus">Lọc trạng thái:</span>
+                            <select id="statusFilter">
+                                <option value="all" data-i18n="filterAll">Tất cả</option>
+                                <option value="occupied" data-i18n="filterOccupied">Đang ở</option>
+                                <option value="available" data-i18n="filterAvailable">Trống</option>
+                                <option value="upcoming" data-i18n="filterUpcoming">Sắp nhận phòng</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th data-i18n="colRoom">Phòng</th>
+                                <th data-i18n="colStatus">Tình trạng</th>
+                                <th data-i18n="colGuest">Khách thuê</th>
+                                <th data-i18n="colDates">Ngày nhận / trả</th>
+                                <th data-i18n="colAmount">Tính tiền</th>
+                                <th data-i18n="colActions">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="roomTable"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="panel" aria-labelledby="expiring-heading">
+                <div class="section-title">
+                    <h2 id="expiring-heading" data-i18n="expiringTitle">Phòng sắp hết hạn</h2>
+                    <span class="hint" data-i18n="expiringHint">Trong vòng 7 ngày tới</span>
+                </div>
+                <ul id="expiringList" class="card-list"></ul>
+            </section>
+        </section>
+
+        <section class="layout-grid">
+            <section class="panel" aria-labelledby="rental-form-heading">
+                <div class="section-title">
+                    <h2 id="rental-form-heading" data-i18n="rentalFormTitle">Ghi nhận hợp đồng thuê</h2>
+                </div>
+                <form id="rentalForm" class="form-grid">
+                    <label>
+                        <span data-i18n="formRoom">Chọn phòng</span>
+                        <select id="roomSelect" name="roomSelect" required></select>
+                    </label>
+                    <label>
+                        <span data-i18n="formGuest">Tên chuyên gia</span>
+                        <input type="text" id="guestName" name="guestName" required data-i18n-placeholder="formGuestPlaceholder">
+                    </label>
+                    <label>
+                        <span data-i18n="formPosition">Chức vụ (nếu có)</span>
+                        <input type="text" id="guestRole" name="guestRole" placeholder="Giám đốc..." data-i18n-placeholder="formRolePlaceholder"></input>
+                    </label>
+                    <label>
+                        <span data-i18n="formCheckin">Ngày nhận phòng</span>
+                        <input type="date" id="checkIn" name="checkIn" required>
+                    </label>
+                    <label>
+                        <span data-i18n="formCheckout">Ngày trả phòng</span>
+                        <input type="date" id="checkOut" name="checkOut">
+                    </label>
+                    <label>
+                        <span data-i18n="formNotes">Ghi chú</span>
+                        <textarea id="notes" name="notes" rows="2" placeholder="Yêu cầu đặc biệt..." data-i18n-placeholder="formNotesPlaceholder"></textarea>
+                    </label>
+                    <div class="form-actions">
+                        <button type="submit" class="primary" data-i18n="formSubmit">Lưu hợp đồng</button>
+                        <button type="reset" class="ghost" data-i18n="formReset">Xóa thông tin</button>
+                    </div>
+                </form>
+                <p class="form-hint" data-i18n="formHint">* Hệ thống tự động tính tiền dựa trên ngày nhận và trả phòng.</p>
+            </section>
+
+            <section class="panel guest-only" aria-labelledby="request-heading">
+                <div class="section-title">
+                    <h2 id="request-heading" data-i18n="requestTitle">Đăng ký phòng cho chuyên gia</h2>
+                </div>
+                <form id="requestForm" class="form-grid">
+                    <label>
+                        <span data-i18n="requestName">Tên chuyên gia</span>
+                        <input type="text" id="requestGuest" name="requestGuest" required>
+                    </label>
+                    <label>
+                        <span data-i18n="requestEmail">Email liên hệ</span>
+                        <input type="email" id="requestEmail" name="requestEmail" required>
+                    </label>
+                    <label>
+                        <span data-i18n="requestRoom">Phòng mong muốn</span>
+                        <select id="requestRoom" name="requestRoom"></select>
+                    </label>
+                    <label>
+                        <span data-i18n="requestCheckin">Ngày nhận</span>
+                        <input type="date" id="requestCheckIn" name="requestCheckIn" required>
+                    </label>
+                    <label>
+                        <span data-i18n="requestCheckout">Ngày trả dự kiến</span>
+                        <input type="date" id="requestCheckOut" name="requestCheckOut" required>
+                    </label>
+                    <label>
+                        <span data-i18n="requestNotes">Ghi chú thêm</span>
+                        <textarea id="requestNotes" name="requestNotes" rows="2" placeholder="Ví dụ: cần đưa đón..." data-i18n-placeholder="requestNotesPlaceholder"></textarea>
+                    </label>
+                    <div class="form-actions">
+                        <button type="submit" class="primary" data-i18n="requestSubmit">Gửi yêu cầu</button>
+                        <button type="reset" class="ghost" data-i18n="formReset">Xóa thông tin</button>
+                    </div>
+                </form>
+                <section class="panel" aria-labelledby="request-list-heading">
+                    <div class="section-title">
+                        <h3 id="request-list-heading" data-i18n="requestListTitle">Yêu cầu đã gửi</h3>
+                    </div>
+                    <ul id="requestList" class="card-list"></ul>
+                </section>
+            </section>
+        </section>
+    </main>
+
+    <template id="requestCardTemplate">
+        <li class="card">
+            <div>
+                <h4 class="card-title"></h4>
+                <p class="card-subtitle"></p>
+                <p class="card-dates"></p>
+                <p class="card-notes"></p>
+            </div>
+        </li>
+    </template>
+
+    <template id="expiringCardTemplate">
+        <li class="card warning">
+            <div>
+                <h4 class="card-title"></h4>
+                <p class="card-dates"></p>
+                <p class="card-amount"></p>
+            </div>
+        </li>
+    </template>
+
+    <script src="app.js" type="module"></script>
+</body>
+</html>
