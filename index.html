@@ -62,7 +62,7 @@
                         <h3 id="expiringCount">0</h3>
                     </div>
                 </article>
-                <article class="stat-card">
+                <article class="stat-card admin-only">
                     <span class="stat-icon">💰</span>
                     <div>
                         <p data-i18n="statRevenue">Doanh thu tháng này</p>
@@ -79,8 +79,7 @@
             </div>
         </section>
 
-        <section class="layout-grid">
-            <section class="panel" aria-labelledby="room-status-heading">
+        <section class="panel panel-room-status" aria-labelledby="room-status-heading">
                 <div class="section-title">
                     <h2 id="room-status-heading" data-i18n="roomStatusTitle">Trạng thái phòng</h2>
                     <div class="filters">
@@ -97,28 +96,35 @@
                 </div>
                 <div class="table-wrapper">
                     <table>
+                        <colgroup>
+                            <col class="col-room">
+                            <col class="col-status">
+                            <col class="col-guest">
+                            <col class="col-dates">
+                            <col class="col-amount">
+                            <col class="col-actions">
+                        </colgroup>
                         <thead>
                             <tr>
-                                <th data-i18n="colRoom">Phòng</th>
-                                <th data-i18n="colStatus">Tình trạng</th>
-                                <th data-i18n="colGuest">Khách thuê</th>
-                                <th data-i18n="colDates">Ngày nhận / trả</th>
-                                <th data-i18n="colAmount">Tính tiền</th>
-                                <th data-i18n="colActions">Thao tác</th>
+                                <th class="cell-room" data-i18n="colRoom">Phòng</th>
+                                <th class="cell-status" data-i18n="colStatus">Tình trạng</th>
+                                <th class="cell-guest" data-i18n="colGuest">Khách thuê</th>
+                                <th class="cell-dates" data-i18n="colDates">Ngày nhận / trả</th>
+                                <th class="cell-amount" data-i18n="colAmount">Tính tiền</th>
+                                <th class="cell-actions" data-i18n="colActions">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody id="roomTable"></tbody>
                     </table>
                 </div>
-            </section>
+        </section>
 
-            <section class="panel" aria-labelledby="expiring-heading">
-                <div class="section-title">
-                    <h2 id="expiring-heading" data-i18n="expiringTitle">Phòng sắp hết hạn</h2>
-                    <span class="hint" data-i18n="expiringHint">Trong vòng 7 ngày tới</span>
-                </div>
-                <ul id="expiringList" class="card-list"></ul>
-            </section>
+        <section class="panel panel-expiring" aria-labelledby="expiring-heading">
+            <div class="section-title">
+                <h2 id="expiring-heading" data-i18n="expiringTitle">Phòng sắp hết hạn</h2>
+                <span class="hint" data-i18n="expiringHint">Trong vòng 7 ngày tới</span>
+            </div>
+            <ul id="expiringList" class="card-list"></ul>
         </section>
 
         <section class="layout-grid">
@@ -200,6 +206,21 @@
                     <ul id="requestList" class="card-list"></ul>
                 </section>
             </section>
+        </section>
+
+        <section class="panel admin-only" aria-labelledby="setup-heading">
+            <div class="section-title">
+                <h2 id="setup-heading" data-i18n="setupTitle">Triển khai cơ sở dữ liệu & đăng nhập</h2>
+            </div>
+            <p data-i18n="setupIntro">Tham khảo quy trình gợi ý dưới đây để triển khai backend thật cho quản trị và khách đặt phòng.</p>
+            <ol class="setup-list">
+                <li data-i18n-html="setupStep1">Tạo dự án miễn phí trên Supabase (hoặc dịch vụ tương tự), bật tính năng Authentication với email/password và tạo hai vai trò: <strong>admin</strong> và <strong>guest</strong>.</li>
+                <li data-i18n-html="setupStep2">Trong phần Database, tạo bảng <code>rooms</code>, <code>rentals</code> và <code>requests</code> với các cột giống dữ liệu mẫu; thêm cột <code>status</code>, <code>check_in</code>, <code>check_out</code> dạng date.</li>
+                <li data-i18n-html="setupStep3">Thiết lập Row Level Security: admin được toàn quyền CRUD, guest chỉ được đọc phòng trống và tạo yêu cầu; sử dụng policies dựa trên vai trò Supabase Auth.</li>
+                <li data-i18n-html="setupStep4">Cập nhật form đăng nhập/đăng ký để gọi API Supabase Auth. Sau khi xác thực, lưu <code>access_token</code> trong sessionStorage và gọi REST/JS client để đồng bộ dữ liệu bảng.</li>
+                <li data-i18n-html="setupStep5">Triển khai cron hoặc function (Edge Function) gửi email nhắc hết hạn cho admin dựa trên bảng <code>rentals</code>; khách chỉ xem được yêu cầu của họ.</li>
+            </ol>
+            <p data-i18n-html="setupOutro">Bạn có thể tùy chỉnh để kết nối trực tiếp bằng Supabase JS Client (trong file <code>app.js</code>) nhằm đồng bộ dữ liệu thật thay vì dữ liệu lưu ở trình duyệt.</p>
         </section>
     </main>
 

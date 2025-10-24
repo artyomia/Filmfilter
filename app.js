@@ -61,6 +61,14 @@ const translations = {
         requestNotesPlaceholder: 'Ví dụ: cần đưa đón sân bay',
         requestSubmit: 'Gửi yêu cầu',
         requestListTitle: 'Yêu cầu đã gửi',
+        setupTitle: 'Triển khai cơ sở dữ liệu & đăng nhập',
+        setupIntro: 'Tham khảo quy trình gợi ý dưới đây để triển khai backend thật cho quản trị và khách đặt phòng.',
+        setupStep1: 'Tạo dự án miễn phí trên Supabase (hoặc dịch vụ tương tự), bật Authentication email/password và tạo hai vai trò: <strong>admin</strong> và <strong>guest</strong>.',
+        setupStep2: 'Trong Database, tạo bảng <code>rooms</code>, <code>rentals</code> và <code>requests</code> với các cột giống dữ liệu mẫu; thêm cột <code>status</code>, <code>check_in</code>, <code>check_out</code> dạng date.',
+        setupStep3: 'Bật Row Level Security: admin được toàn quyền CRUD, guest chỉ đọc phòng trống và tạo yêu cầu; viết policy dựa trên vai trò Supabase Auth.',
+        setupStep4: 'Cập nhật form đăng nhập/đăng ký gọi API Supabase Auth; lưu <code>access_token</code> trong sessionStorage và dùng REST/JS client để đồng bộ dữ liệu.',
+        setupStep5: 'Tạo cron hoặc Edge Function gửi email nhắc hết hạn dựa trên bảng <code>rentals</code>; khách chỉ xem được yêu cầu của chính họ.',
+        setupOutro: 'Có thể kết nối Supabase JS Client trực tiếp trong <code>app.js</code> để dùng dữ liệu thật thay vì dữ liệu lưu trên trình duyệt.',
         statusOccupied: 'Đang ở',
         statusAvailable: 'Trống',
         statusUpcoming: 'Sắp nhận phòng',
@@ -137,6 +145,14 @@ const translations = {
         requestNotesPlaceholder: 'E.g. needs airport pick-up',
         requestSubmit: 'Send request',
         requestListTitle: 'Submitted requests',
+        setupTitle: 'Database & authentication rollout guide',
+        setupIntro: 'Follow this checklist to connect a real backend for administrators and guest bookings.',
+        setupStep1: 'Create a free Supabase project (or similar), enable email/password Authentication and define two roles: <strong>admin</strong> and <strong>guest</strong>.',
+        setupStep2: 'In the Database section, create <code>rooms</code>, <code>rentals</code>, and <code>requests</code> tables mirroring the sample schema; include <code>status</code>, <code>check_in</code>, <code>check_out</code> date columns.',
+        setupStep3: 'Turn on Row Level Security: admins have full CRUD, guests can only read available rooms and submit requests via role-based policies.',
+        setupStep4: 'Wire the login/register forms to Supabase Auth, store the <code>access_token</code> in sessionStorage, and use the REST/JS client to sync table data.',
+        setupStep5: 'Add a scheduled job or Edge Function to email expiry reminders from the <code>rentals</code> table; guests should only see their own requests.',
+        setupOutro: 'You can swap the in-browser store with Supabase JS Client calls inside <code>app.js</code> to work with production data.',
         statusOccupied: 'Occupied',
         statusAvailable: 'Available',
         statusUpcoming: 'Upcoming',
@@ -161,6 +177,12 @@ const translations = {
         validationDate: 'Check-out date must be after check-in date.',
         futureCheckinConfirm: 'Confirm the guest has checked in to room {room}?'
     }
+};
+
+const ACTION_CONFIG = {
+    checkout: { icon: '🚪', variant: 'checkout', labelKey: 'actionCheckout' },
+    extend: { icon: '🕒', variant: 'extend', labelKey: 'actionExtend' },
+    arrive: { icon: '✅', variant: 'arrive', labelKey: 'actionArrive' },
 };
 
 const deepClone = (value) => (typeof structuredClone === 'function'
@@ -411,9 +433,11 @@ function attachEventListeners() {
     elements.roomTable.addEventListener('click', (event) => {
         const target = event.target;
         if (!(target instanceof HTMLElement)) return;
-        const action = target.dataset.action;
+        const button = target.closest('button[data-action]');
+        if (!(button instanceof HTMLElement)) return;
+        const action = button.dataset.action;
         if (!action) return;
-        const room = target.dataset.room;
+        const room = button.dataset.room;
         if (!room) return;
         switch (action) {
             case 'checkout':
@@ -484,12 +508,12 @@ function renderRoomTable() {
         const chargeInfo = rental ? calculateCharge(rental.checkIn, rental.checkOut) : { amount: 0, days: 0 };
 
         tr.innerHTML = `
-            <td>${room}</td>
-            <td>${renderStatusTag(status, currentLang)}</td>
-            <td>${renderGuestInfo(rental, currentLang)}</td>
-            <td>${renderDateRange(rental)}</td>
-            <td>${rental ? formatCurrency(chargeInfo.amount, currentLang) : '-'}</td>
-            <td>${renderActions(room, status)}</td>
+            <td class="cell-room">${room}</td>
+            <td class="cell-status">${renderStatusTag(status, currentLang)}</td>
+            <td class="cell-guest">${renderGuestInfo(rental, currentLang)}</td>
+            <td class="cell-dates">${renderDateRange(rental)}</td>
+            <td class="cell-amount">${rental ? formatCurrency(chargeInfo.amount, currentLang) : '-'}</td>
+            <td class="cell-actions">${renderActions(room, status)}</td>
         `;
         fragment.appendChild(tr);
     });
@@ -561,12 +585,19 @@ function renderActions(room, status) {
     if (currentRole === 'guest') return '';
     const actions = [];
     if (status === 'occupied') {
-        actions.push(`<button class="secondary" data-room="${room}" data-action="checkout">${translate('actionCheckout')}</button>`);
-        actions.push(`<button class="ghost" data-room="${room}" data-action="extend">${translate('actionExtend')}</button>`);
+        actions.push(renderActionButton('checkout', room));
+        actions.push(renderActionButton('extend', room));
     } else if (status === 'upcoming') {
-        actions.push(`<button class="primary" data-room="${room}" data-action="arrive">${translate('actionArrive')}</button>`);
+        actions.push(renderActionButton('arrive', room));
     }
     return actions.length ? `<div class="actions">${actions.join('')}</div>` : '';
+}
+
+function renderActionButton(action, room) {
+    const config = ACTION_CONFIG[action];
+    if (!config) return '';
+    const label = translate(config.labelKey);
+    return `<button type="button" class="icon-button" data-room="${room}" data-action="${action}" data-variant="${config.variant}" title="${label}" aria-label="${label}"><span aria-hidden="true">${config.icon}</span><span class="sr-only">${label}</span></button>`;
 }
 
 function handleCheckout(room) {
@@ -707,6 +738,12 @@ function applyLanguage(lang) {
     document.documentElement.lang = lang;
     elements.langButtons.forEach((btn) => {
         btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+
+    document.querySelectorAll('[data-i18n-html]').forEach((el) => {
+        const key = el.getAttribute('data-i18n-html');
+        if (!key) return;
+        el.innerHTML = translate(key, lang);
     });
 
     document.querySelectorAll('[data-i18n]').forEach((el) => {
