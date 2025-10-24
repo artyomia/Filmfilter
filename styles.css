@@ -265,6 +265,19 @@ table tbody tr:hover {
     color: #ea580c;
 }
 
+.status-requested {
+    background: rgba(99, 102, 241, 0.18);
+    color: #4f46e5;
+}
+
+.inline-hint {
+    display: inline-block;
+    margin-left: 0.35rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--muted);
+}
+
 .actions {
     display: flex;
     gap: 0.5rem;

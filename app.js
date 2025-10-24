@@ -36,6 +36,7 @@ const translations = {
         filterOccupied: 'Đang ở',
         filterAvailable: 'Trống',
         filterUpcoming: 'Sắp nhận phòng',
+        filterRequested: 'Chờ duyệt',
         colRoom: 'Phòng',
         colStatus: 'Tình trạng',
         colGuest: 'Khách thuê',
@@ -72,6 +73,7 @@ const translations = {
         statusOccupied: 'Đang ở',
         statusAvailable: 'Trống',
         statusUpcoming: 'Sắp nhận phòng',
+        statusRequested: 'Chờ duyệt',
         statusHistory: 'Đã trả phòng',
         actionCheckout: 'Trả phòng hôm nay',
         actionExtend: 'Gia hạn',
@@ -92,6 +94,7 @@ const translations = {
         toastReset: 'Đã làm mới dữ liệu trống.',
         toastTranslate: 'Đã chuyển sang tiếng Việt.',
         toastTranslateEn: 'Đã chuyển sang tiếng Anh.',
+        pendingCharge: 'Đang chờ duyệt',
         csvHeader: ['Phòng', 'Khách thuê', 'Chức vụ', 'Ngày nhận', 'Ngày trả', 'Số ngày', 'Thành tiền (VND)', 'Ghi chú'],
         csvTitle: 'bao_cao_ky_tuc_xa.csv',
         validationDate: 'Ngày trả phòng phải sau ngày nhận phòng.',
@@ -133,6 +136,7 @@ const translations = {
         filterOccupied: 'Occupied',
         filterAvailable: 'Available',
         filterUpcoming: 'Upcoming',
+        filterRequested: 'Pending approval',
         colRoom: 'Room',
         colStatus: 'Status',
         colGuest: 'Guest',
@@ -169,6 +173,7 @@ const translations = {
         statusOccupied: 'Occupied',
         statusAvailable: 'Available',
         statusUpcoming: 'Upcoming',
+        statusRequested: 'Pending approval',
         statusHistory: 'Checked out',
         actionCheckout: 'Check-out today',
         actionExtend: 'Extend stay',
@@ -189,6 +194,7 @@ const translations = {
         toastReset: 'Blank dataset restored.',
         toastTranslate: 'Switched to Vietnamese.',
         toastTranslateEn: 'Switched to English.',
+        pendingCharge: 'Pending approval',
         csvHeader: ['Room', 'Guest', 'Position', 'Check-in', 'Check-out', 'Nights', 'Amount (VND)', 'Notes'],
         csvTitle: 'dormitory_report.csv',
         validationDate: 'Check-out date must be after check-in date.',
@@ -457,22 +463,22 @@ function attachEventListeners() {
 
 function populateRoomSelectors() {
     const currentLang = state.language;
-    const selectElements = [elements.roomSelect, elements.requestRoom];
-    selectElements.forEach((select) => {
-        if (!select) return;
-        select.innerHTML = '';
-        ROOM_NUMBERS.forEach((room) => {
-            const option = document.createElement('option');
-            option.value = room;
-            const latest = getLatestRentalForRoom(room);
-            const status = getRoomStatus(latest);
-            const labelStatus = translateStatus(status, currentLang);
-            option.textContent = `${room} · ${labelStatus}`;
-            if (select === elements.roomSelect && status === 'occupied') {
-                option.disabled = true;
-            }
-            select.appendChild(option);
-        });
+    const select = elements.roomSelect;
+    if (!select) return;
+    select.innerHTML = '';
+
+    ROOM_NUMBERS.forEach((room) => {
+        const rental = getLatestRentalForRoom(room);
+        const pendingRequest = !rental ? getLatestPendingRequestForRoom(room) : null;
+        const status = pendingRequest ? 'requested' : getRoomStatus(rental);
+        const labelStatus = translateStatus(status, currentLang);
+        const option = document.createElement('option');
+        option.value = room;
+        option.textContent = `${room} · ${labelStatus}`;
+        if (status === 'occupied' || status === 'requested') {
+            option.disabled = true;
+        }
+        select.appendChild(option);
     });
 }
 
@@ -505,18 +511,30 @@ function renderRoomTable() {
 
     ROOM_NUMBERS.forEach((room) => {
         const rental = getLatestRentalForRoom(room);
-        const status = getRoomStatus(rental);
+        const pendingRequest = !rental ? getLatestPendingRequestForRoom(room) : null;
+        const status = pendingRequest ? 'requested' : getRoomStatus(rental);
         if (filter !== 'all' && status !== filter) return;
 
-        const tr = document.createElement('tr');
-        const chargeInfo = rental ? calculateCharge(rental.checkIn, rental.checkOut) : { amount: 0, days: 0 };
+        const record = pendingRequest ?? rental;
+        const chargeInfo = record ? calculateCharge(record.checkIn, record.checkOut) : { amount: 0, days: 0 };
+        let amountCell = '-';
+        if (record) {
+            if (chargeInfo.amount > 0) {
+                amountCell = formatCurrency(chargeInfo.amount, currentLang);
+            } else if (pendingRequest) {
+                amountCell = `<span class="hint">${translate('pendingCharge', currentLang)}</span>`;
+            } else {
+                amountCell = formatCurrency(chargeInfo.amount, currentLang);
+            }
+        }
 
+        const tr = document.createElement('tr');
         tr.innerHTML = `
             <td class="cell-room">${room}</td>
             <td class="cell-status">${renderStatusTag(status, currentLang)}</td>
-            <td class="cell-guest">${renderGuestInfo(rental, currentLang)}</td>
-            <td class="cell-dates">${renderDateRange(rental)}</td>
-            <td class="cell-amount">${rental ? formatCurrency(chargeInfo.amount, currentLang) : '-'}</td>
+            <td class="cell-guest">${renderGuestInfo(record, currentLang, Boolean(pendingRequest))}</td>
+            <td class="cell-dates">${renderDateRange(record)}</td>
+            <td class="cell-amount">${amountCell}</td>
             <td class="cell-actions">${renderActions(room, status)}</td>
         `;
         fragment.appendChild(tr);
@@ -701,8 +719,7 @@ function handleGuestRequestSubmission({ room, guestName, guestRole, checkIn, che
         request.updatedAt = new Date().toISOString();
         saveState();
         clearEditingRequest();
-        renderRequests();
-        renderDashboard();
+        renderAll();
         toast('toastRequestUpdated');
         return;
     }
@@ -716,8 +733,8 @@ function handleGuestRequestSubmission({ room, guestName, guestRole, checkIn, che
     });
     saveState();
     elements.rentalForm.reset();
-    renderRequests();
-    renderDashboard();
+    populateRoomSelectors();
+    renderAll();
     updateRoleUI();
     toast('toastRequestSaved');
 }
@@ -747,8 +764,7 @@ function handleAdminRequestUpdate({ room, guestName, guestRole, checkIn, checkOu
     request.updatedAt = new Date().toISOString();
     saveState();
     clearEditingRequest();
-    renderRequests();
-    renderDashboard();
+    renderAll();
     toast('toastRequestUpdated');
 }
 
@@ -838,11 +854,11 @@ function handleRejectRequest(id) {
     if (editingRequestId === id) {
         clearEditingRequest();
     } else {
+        populateRoomSelectors();
         updateRoleUI();
     }
 
-    renderRequests();
-    renderDashboard();
+    renderAll();
     toast('toastRequestRejected');
 }
 
@@ -926,10 +942,14 @@ function renderStatusTag(status, lang) {
     return `<span class="status-tag status-${status}">● ${label}</span>`;
 }
 
-function renderGuestInfo(rental, lang) {
-    if (!rental) return `<span class="hint">${translate('noGuest', lang)}</span>`;
-    const role = rental.guestRole ? ` · ${rental.guestRole}` : '';
-    return `<strong>${rental.guestName}</strong>${role}`;
+function renderGuestInfo(record, lang, isPending = false) {
+    if (!record) return `<span class="hint">${translate('noGuest', lang)}</span>`;
+    const role = record.guestRole ? ` · ${record.guestRole}` : '';
+    if (isPending) {
+        const pendingLabel = translate('requestStatusPending', lang);
+        return `<strong>${record.guestName}</strong>${role}<span class="hint inline-hint">${pendingLabel}</span>`;
+    }
+    return `<strong>${record.guestName}</strong>${role}`;
 }
 
 function renderDateRange(rental) {
@@ -1013,6 +1033,13 @@ function getLatestRentalForRoom(room) {
         .filter((r) => r.room === room)
         .slice()
         .sort((a, b) => parseDate(b.checkIn) - parseDate(a.checkIn))[0] ?? null;
+}
+
+function getLatestPendingRequestForRoom(room) {
+    return state.requests
+        .filter((request) => request.room === room && (request.status ?? 'pending') === 'pending')
+        .slice()
+        .sort((a, b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0))[0] ?? null;
 }
 
 function getRoomStatus(rental) {
@@ -1148,6 +1175,8 @@ function translateStatus(status, lang = state.language) {
             return translate('statusAvailable', lang);
         case 'upcoming':
             return translate('statusUpcoming', lang);
+        case 'requested':
+            return translate('statusRequested', lang);
         default:
             return translate('statusHistory', lang);
     }
