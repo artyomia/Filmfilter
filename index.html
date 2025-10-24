@@ -14,10 +14,19 @@
         <div class="overlay-card">
             <h1 data-i18n="loginTitle">Chọn quyền truy cập</h1>
             <p data-i18n="loginHint">Chọn vai trò phù hợp để tiếp tục sử dụng hệ thống.</p>
-            <div class="overlay-actions">
+            <div class="overlay-actions" id="roleSelection">
                 <button id="adminLogin" class="primary" data-i18n="loginAdmin">Đăng nhập quản trị</button>
                 <button id="guestLogin" class="secondary" data-i18n="loginGuest">Khách đặt phòng</button>
             </div>
+            <form id="adminAccessForm" class="admin-access hidden" novalidate>
+                <label for="adminPassword" data-i18n="loginPasswordLabel">Nhập mật khẩu quản trị</label>
+                <input type="password" id="adminPassword" autocomplete="current-password" data-i18n-placeholder="loginPasswordPlaceholder" placeholder="Nhập mật khẩu" required>
+                <div class="overlay-actions">
+                    <button type="submit" class="primary" data-i18n="loginConfirm">Vào hệ thống</button>
+                    <button type="button" id="adminCancel" class="ghost" data-i18n="loginCancel">Hủy</button>
+                </div>
+                <p id="adminPasswordError" class="error hidden" data-i18n="loginError">Mật khẩu chưa đúng.</p>
+            </form>
         </div>
     </div>
 
@@ -44,7 +53,7 @@
                 <h2 id="dashboard-heading" data-i18n="dashboardTitle">Tổng quan</h2>
                 <div class="dashboard-actions">
                     <button id="exportCsv" class="ghost" data-i18n="exportCsv">Xuất báo cáo CSV</button>
-                    <button id="resetData" class="ghost danger" data-i18n="resetData">Khôi phục dữ liệu mẫu</button>
+                    <button id="resetData" class="ghost danger" data-i18n="resetData">Làm mới dữ liệu trống</button>
                 </div>
             </div>
             <div class="stat-grid">
@@ -208,19 +217,30 @@
             </section>
         </section>
 
-        <section class="panel admin-only" aria-labelledby="setup-heading">
+        <section class="panel admin-only panel-history" aria-labelledby="history-heading">
             <div class="section-title">
-                <h2 id="setup-heading" data-i18n="setupTitle">Triển khai cơ sở dữ liệu & đăng nhập</h2>
+                <h2 id="history-heading" data-i18n="historyTitle">Lưu trữ trả phòng</h2>
+                <span class="hint" data-i18n="historyHint">Chỉ hiển thị cho quản trị viên</span>
             </div>
-            <p data-i18n="setupIntro">Tham khảo quy trình gợi ý dưới đây để triển khai backend thật cho quản trị và khách đặt phòng.</p>
-            <ol class="setup-list">
-                <li data-i18n-html="setupStep1">Tạo dự án miễn phí trên Supabase (hoặc dịch vụ tương tự), bật tính năng Authentication với email/password và tạo hai vai trò: <strong>admin</strong> và <strong>guest</strong>.</li>
-                <li data-i18n-html="setupStep2">Trong phần Database, tạo bảng <code>rooms</code>, <code>rentals</code> và <code>requests</code> với các cột giống dữ liệu mẫu; thêm cột <code>status</code>, <code>check_in</code>, <code>check_out</code> dạng date.</li>
-                <li data-i18n-html="setupStep3">Thiết lập Row Level Security: admin được toàn quyền CRUD, guest chỉ được đọc phòng trống và tạo yêu cầu; sử dụng policies dựa trên vai trò Supabase Auth.</li>
-                <li data-i18n-html="setupStep4">Cập nhật form đăng nhập/đăng ký để gọi API Supabase Auth. Sau khi xác thực, lưu <code>access_token</code> trong sessionStorage và gọi REST/JS client để đồng bộ dữ liệu bảng.</li>
-                <li data-i18n-html="setupStep5">Triển khai cron hoặc function (Edge Function) gửi email nhắc hết hạn cho admin dựa trên bảng <code>rentals</code>; khách chỉ xem được yêu cầu của họ.</li>
-            </ol>
-            <p data-i18n-html="setupOutro">Bạn có thể tùy chỉnh để kết nối trực tiếp bằng Supabase JS Client (trong file <code>app.js</code>) nhằm đồng bộ dữ liệu thật thay vì dữ liệu lưu ở trình duyệt.</p>
+            <div class="table-wrapper">
+                <table>
+                    <colgroup>
+                        <col class="col-room">
+                        <col class="col-guest">
+                        <col class="col-dates">
+                        <col class="col-amount">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th class="cell-room" data-i18n="colRoom">Phòng</th>
+                            <th class="cell-guest" data-i18n="colGuest">Khách thuê</th>
+                            <th class="cell-dates" data-i18n="colDates">Ngày nhận / trả</th>
+                            <th class="cell-amount" data-i18n="colAmount">Tính tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTable"></tbody>
+                </table>
+            </div>
         </section>
     </main>
 

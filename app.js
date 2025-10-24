@@ -5,7 +5,8 @@ const ROOM_NUMBERS = [
 
 const DAILY_RATE = 300_000;
 const MONTHLY_RATE = 5_200_000;
-const STORAGE_KEY = 'jsc-dormitory-state-v1';
+const STORAGE_KEY = 'jsc-dormitory-state-v2';
+const ADMIN_PASSWORD = 'jscbauxeo';
 const DATE_OPTIONS = { year: 'numeric', month: '2-digit', day: '2-digit' };
 
 const translations = {
@@ -14,12 +15,17 @@ const translations = {
         loginHint: 'Chọn vai trò phù hợp để tiếp tục sử dụng hệ thống.',
         loginAdmin: 'Đăng nhập quản trị',
         loginGuest: 'Khách đặt phòng',
+        loginPasswordLabel: 'Nhập mật khẩu quản trị',
+        loginPasswordPlaceholder: 'Nhập mật khẩu',
+        loginConfirm: 'Vào hệ thống',
+        loginCancel: 'Hủy',
+        loginError: 'Mật khẩu chưa đúng.',
         appTitle: 'Ký túc xá chuyên gia - JSC',
         appSubtitle: 'Quản lý phòng & hợp đồng thuê hiệu quả',
         logout: 'Đăng xuất',
         dashboardTitle: 'Tổng quan',
         exportCsv: 'Xuất báo cáo CSV',
-        resetData: 'Khôi phục dữ liệu mẫu',
+        resetData: 'Làm mới dữ liệu trống',
         statOccupied: 'Phòng đang có khách',
         statExpiring: 'Phòng sắp hết hạn (7 ngày)',
         statRevenue: 'Doanh thu tháng này',
@@ -61,14 +67,9 @@ const translations = {
         requestNotesPlaceholder: 'Ví dụ: cần đưa đón sân bay',
         requestSubmit: 'Gửi yêu cầu',
         requestListTitle: 'Yêu cầu đã gửi',
-        setupTitle: 'Triển khai cơ sở dữ liệu & đăng nhập',
-        setupIntro: 'Tham khảo quy trình gợi ý dưới đây để triển khai backend thật cho quản trị và khách đặt phòng.',
-        setupStep1: 'Tạo dự án miễn phí trên Supabase (hoặc dịch vụ tương tự), bật Authentication email/password và tạo hai vai trò: <strong>admin</strong> và <strong>guest</strong>.',
-        setupStep2: 'Trong Database, tạo bảng <code>rooms</code>, <code>rentals</code> và <code>requests</code> với các cột giống dữ liệu mẫu; thêm cột <code>status</code>, <code>check_in</code>, <code>check_out</code> dạng date.',
-        setupStep3: 'Bật Row Level Security: admin được toàn quyền CRUD, guest chỉ đọc phòng trống và tạo yêu cầu; viết policy dựa trên vai trò Supabase Auth.',
-        setupStep4: 'Cập nhật form đăng nhập/đăng ký gọi API Supabase Auth; lưu <code>access_token</code> trong sessionStorage và dùng REST/JS client để đồng bộ dữ liệu.',
-        setupStep5: 'Tạo cron hoặc Edge Function gửi email nhắc hết hạn dựa trên bảng <code>rentals</code>; khách chỉ xem được yêu cầu của chính họ.',
-        setupOutro: 'Có thể kết nối Supabase JS Client trực tiếp trong <code>app.js</code> để dùng dữ liệu thật thay vì dữ liệu lưu trên trình duyệt.',
+        historyTitle: 'Lưu trữ trả phòng',
+        historyHint: 'Chỉ hiển thị cho quản trị viên',
+        historyEmpty: 'Chưa có phòng nào được trả.',
         statusOccupied: 'Đang ở',
         statusAvailable: 'Trống',
         statusUpcoming: 'Sắp nhận phòng',
@@ -85,7 +86,7 @@ const translations = {
         toastRequestSaved: 'Đã gửi yêu cầu đặt phòng.',
         toastCheckout: 'Đã cập nhật trả phòng.',
         toastExtend: 'Đã gia hạn thời gian lưu trú.',
-        toastReset: 'Đã khôi phục dữ liệu mẫu.',
+        toastReset: 'Đã làm mới dữ liệu trống.',
         toastTranslate: 'Đã chuyển sang tiếng Việt.',
         toastTranslateEn: 'Đã chuyển sang tiếng Anh.',
         csvHeader: ['Phòng', 'Khách thuê', 'Chức vụ', 'Ngày nhận', 'Ngày trả', 'Số ngày', 'Thành tiền (VND)', 'Ghi chú'],
@@ -98,12 +99,17 @@ const translations = {
         loginHint: 'Choose the role you want to use in the system.',
         loginAdmin: 'Sign in as admin',
         loginGuest: 'Guest booking portal',
+        loginPasswordLabel: 'Enter administrator password',
+        loginPasswordPlaceholder: 'Enter password',
+        loginConfirm: 'Enter dashboard',
+        loginCancel: 'Cancel',
+        loginError: 'Password is incorrect.',
         appTitle: 'JSC Expert Dormitory',
         appSubtitle: 'Track rooms & rental agreements effortlessly',
         logout: 'Sign out',
         dashboardTitle: 'Overview',
         exportCsv: 'Export CSV report',
-        resetData: 'Restore sample data',
+        resetData: 'Reset to blank data',
         statOccupied: 'Occupied rooms',
         statExpiring: 'Expiring in 7 days',
         statRevenue: 'Revenue this month',
@@ -145,14 +151,9 @@ const translations = {
         requestNotesPlaceholder: 'E.g. needs airport pick-up',
         requestSubmit: 'Send request',
         requestListTitle: 'Submitted requests',
-        setupTitle: 'Database & authentication rollout guide',
-        setupIntro: 'Follow this checklist to connect a real backend for administrators and guest bookings.',
-        setupStep1: 'Create a free Supabase project (or similar), enable email/password Authentication and define two roles: <strong>admin</strong> and <strong>guest</strong>.',
-        setupStep2: 'In the Database section, create <code>rooms</code>, <code>rentals</code>, and <code>requests</code> tables mirroring the sample schema; include <code>status</code>, <code>check_in</code>, <code>check_out</code> date columns.',
-        setupStep3: 'Turn on Row Level Security: admins have full CRUD, guests can only read available rooms and submit requests via role-based policies.',
-        setupStep4: 'Wire the login/register forms to Supabase Auth, store the <code>access_token</code> in sessionStorage, and use the REST/JS client to sync table data.',
-        setupStep5: 'Add a scheduled job or Edge Function to email expiry reminders from the <code>rentals</code> table; guests should only see their own requests.',
-        setupOutro: 'You can swap the in-browser store with Supabase JS Client calls inside <code>app.js</code> to work with production data.',
+        historyTitle: 'Check-out archive',
+        historyHint: 'Visible to administrators only',
+        historyEmpty: 'No completed stays yet.',
         statusOccupied: 'Occupied',
         statusAvailable: 'Available',
         statusUpcoming: 'Upcoming',
@@ -169,7 +170,7 @@ const translations = {
         toastRequestSaved: 'Booking request submitted.',
         toastCheckout: 'Check-out updated.',
         toastExtend: 'Stay extended.',
-        toastReset: 'Sample data restored.',
+        toastReset: 'Blank dataset restored.',
         toastTranslate: 'Switched to Vietnamese.',
         toastTranslateEn: 'Switched to English.',
         csvHeader: ['Room', 'Guest', 'Position', 'Check-in', 'Check-out', 'Nights', 'Amount (VND)', 'Notes'],
@@ -194,109 +195,34 @@ const createId = () => (typeof crypto !== 'undefined' && typeof crypto.randomUUI
     : `id-${Date.now()}-${Math.random().toString(16).slice(2)}`);
 
 const defaultState = {
-    rentals: [
-        {
-            id: createId(),
-            room: '205',
-            guestName: 'Kim Sungdae',
-            guestRole: 'QA Specialist',
-            checkIn: '2025-10-16',
-            checkOut: '2025-11-22',
-            notes: 'Ưu tiên phòng yên tĩnh',
-        },
-        {
-            id: createId(),
-            room: '207',
-            guestName: 'Lee Hyunwoo',
-            guestRole: 'Automation Lead',
-            checkIn: '2025-10-01',
-            checkOut: '2025-10-30',
-            notes: 'Cần đưa đón sân bay',
-        },
-        {
-            id: createId(),
-            room: '208',
-            guestName: 'Nguyễn Văn Bình',
-            guestRole: 'Chuyên gia an ninh',
-            checkIn: '2025-10-24',
-            checkOut: null,
-            notes: 'Ở lại đến khi dự án kết thúc',
-        },
-        {
-            id: createId(),
-            room: '210',
-            guestName: 'Trần Thị Mai',
-            guestRole: 'Finance Manager',
-            checkIn: '2025-09-10',
-            checkOut: '2025-10-05',
-            notes: '',
-        },
-        {
-            id: createId(),
-            room: '211',
-            guestName: 'Hong Youngou',
-            guestRole: 'Project Director',
-            checkIn: '2025-09-29',
-            checkOut: '2025-11-01',
-            notes: 'Yêu cầu bếp riêng',
-        },
-        {
-            id: createId(),
-            room: '106',
-            guestName: 'Lê Hồng Phúc',
-            guestRole: 'Data Analyst',
-            checkIn: '2025-11-02',
-            checkOut: null,
-            notes: 'Check-in muộn 21:00',
-        },
-        {
-            id: createId(),
-            room: '203',
-            guestName: 'Sato Aki',
-            guestRole: 'Consultant',
-            checkIn: '2025-11-05',
-            checkOut: '2025-11-25',
-            notes: '',
-        },
-    ],
-    requests: [
-        {
-            id: createId(),
-            guestName: 'Park Jimin',
-            email: 'pjimin@example.com',
-            room: '209',
-            checkIn: '2025-12-01',
-            checkOut: '2025-12-20',
-            notes: 'Ưu tiên phòng gần thang máy',
-            createdAt: new Date().toISOString(),
-        },
-        {
-            id: createId(),
-            guestName: 'Nguyễn Thảo Vy',
-            email: 'thaovy@example.com',
-            room: '104',
-            checkIn: '2025-11-18',
-            checkOut: '2025-11-27',
-            notes: '',
-            createdAt: new Date().toISOString(),
-        },
-    ],
+    rentals: [],
+    requests: [],
+    history: [],
     language: 'vi',
 };
 
 let state = loadState();
+if (!Array.isArray(state.history)) {
+    state.history = [];
+}
 let currentRole = null;
 
 const elements = {
     overlay: document.getElementById('login-overlay'),
     adminLogin: document.getElementById('adminLogin'),
     guestLogin: document.getElementById('guestLogin'),
+    roleSelection: document.getElementById('roleSelection'),
+    adminForm: document.getElementById('adminAccessForm'),
+    adminPassword: document.getElementById('adminPassword'),
+    adminCancel: document.getElementById('adminCancel'),
+    adminError: document.getElementById('adminPasswordError'),
     logout: document.getElementById('logoutButton'),
     occupiedCount: document.getElementById('occupiedCount'),
     expiringCount: document.getElementById('expiringCount'),
     monthlyRevenue: document.getElementById('monthlyRevenue'),
     requestCount: document.getElementById('requestCount'),
     roomTable: document.getElementById('roomTable'),
+    historyTable: document.getElementById('historyTable'),
     expiringList: document.getElementById('expiringList'),
     rentalForm: document.getElementById('rentalForm'),
     roomSelect: document.getElementById('roomSelect'),
@@ -320,21 +246,51 @@ function init() {
 }
 
 function attachEventListeners() {
-    elements.adminLogin.addEventListener('click', () => {
-        currentRole = 'admin';
-        document.body.classList.remove('guest-mode');
-        hideOverlay();
+    elements.adminLogin?.addEventListener('click', () => {
+        elements.roleSelection?.classList.add('hidden');
+        elements.adminForm?.classList.remove('hidden');
+        elements.adminError?.classList.add('hidden');
+        if (elements.adminPassword) {
+            elements.adminPassword.value = '';
+            elements.adminPassword.focus();
+        }
     });
 
-    elements.guestLogin.addEventListener('click', () => {
+    elements.adminCancel?.addEventListener('click', () => {
+        resetAdminAccess();
+    });
+
+    elements.adminForm?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const password = elements.adminPassword?.value ?? '';
+        if (password === ADMIN_PASSWORD) {
+            currentRole = 'admin';
+            document.body.classList.remove('guest-mode');
+            hideOverlay();
+            renderAll();
+        } else {
+            elements.adminError?.classList.remove('hidden');
+            elements.adminPassword?.focus();
+            elements.adminPassword?.select?.();
+        }
+    });
+
+    elements.adminPassword?.addEventListener('input', () => {
+        elements.adminError?.classList.add('hidden');
+    });
+
+    elements.guestLogin?.addEventListener('click', () => {
         currentRole = 'guest';
         document.body.classList.add('guest-mode');
         hideOverlay();
+        renderAll();
     });
 
-    elements.logout.addEventListener('click', () => {
+    elements.logout?.addEventListener('click', () => {
         currentRole = null;
+        document.body.classList.remove('guest-mode');
         showOverlay();
+        renderAll();
     });
 
     elements.rentalForm.addEventListener('submit', (event) => {
@@ -479,6 +435,7 @@ function renderAll() {
     renderRoomTable();
     renderExpiring();
     renderRequests();
+    renderHistory();
 }
 
 function renderDashboard() {
@@ -548,19 +505,59 @@ function renderRequests() {
     if (!elements.requestList) return;
     elements.requestList.innerHTML = '';
     const template = document.getElementById('requestCardTemplate');
-    if (!template) return;
+    if (!(template instanceof HTMLTemplateElement)) return;
 
-    state.requests
-        .slice()
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        .forEach((request) => {
-            const clone = template.content.cloneNode(true);
-            clone.querySelector('.card-title').textContent = `${request.guestName} · ${request.room}`;
-            clone.querySelector('.card-subtitle').textContent = request.email;
-            clone.querySelector('.card-dates').textContent = `${formatDate(request.checkIn)} → ${formatDate(request.checkOut)}`;
-            clone.querySelector('.card-notes').textContent = request.notes || '—';
-            elements.requestList.appendChild(clone);
-        });
+    const requests = state.requests.slice().sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    if (!requests.length) {
+        const empty = document.createElement('li');
+        empty.className = 'card empty';
+        empty.textContent = '—';
+        elements.requestList.appendChild(empty);
+        return;
+    }
+
+    requests.forEach((request) => {
+        const clone = template.content.cloneNode(true);
+        clone.querySelector('.card-title').textContent = `${request.room || '---'} · ${request.guestName}`;
+        clone.querySelector('.card-subtitle').textContent = request.email;
+        clone.querySelector('.card-dates').textContent = `${formatDate(request.checkIn)} → ${formatDate(request.checkOut)}`;
+        clone.querySelector('.card-notes').textContent = request.notes || '—';
+        elements.requestList.appendChild(clone);
+    });
+}
+
+function renderHistory() {
+    if (!elements.historyTable) return;
+    const fragment = document.createDocumentFragment();
+
+    if (!state.history.length) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 4;
+        td.className = 'cell-empty';
+        td.textContent = translate('historyEmpty');
+        tr.appendChild(td);
+        fragment.appendChild(tr);
+    } else {
+        state.history
+            .slice()
+            .sort((a, b) => parseDate(b.checkOut ?? b.checkIn) - parseDate(a.checkOut ?? a.checkIn))
+            .forEach((record) => {
+                const amount = record.amount ?? calculateCharge(record.checkIn, record.checkOut).amount;
+                const role = record.guestRole ? ` · ${record.guestRole}` : '';
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="cell-room">${record.room}</td>
+                    <td class="cell-guest"><strong>${record.guestName}</strong>${role}</td>
+                    <td class="cell-dates">${renderDateRange(record)}</td>
+                    <td class="cell-amount">${formatCurrency(amount, state.language)}</td>
+                `;
+                fragment.appendChild(tr);
+            });
+    }
+
+    elements.historyTable.innerHTML = '';
+    elements.historyTable.appendChild(fragment);
 }
 
 function renderStatusTag(status, lang) {
@@ -582,7 +579,7 @@ function renderDateRange(rental) {
 }
 
 function renderActions(room, status) {
-    if (currentRole === 'guest') return '';
+    if (currentRole !== 'admin') return '';
     const actions = [];
     if (status === 'occupied') {
         actions.push(renderActionButton('checkout', room));
@@ -601,17 +598,30 @@ function renderActionButton(action, room) {
 }
 
 function handleCheckout(room) {
+    if (currentRole !== 'admin') return;
     const rental = getLatestRentalForRoom(room);
     if (!rental) return;
     const confirmation = confirm(replacePlaceholders(translate('checkOutConfirm'), { room }));
     if (!confirmation) return;
-    rental.checkOut = toISODate(new Date());
+    const today = toISODate(new Date());
+    const charge = calculateCharge(rental.checkIn, today);
+    const archived = {
+        ...rental,
+        checkOut: today,
+        amount: charge.amount,
+        days: charge.days,
+        archivedAt: new Date().toISOString(),
+    };
+    state.rentals = state.rentals.filter((entry) => entry.id !== rental.id);
+    state.history.unshift(archived);
     saveState();
+    populateRoomSelectors();
     renderAll();
     toast('toastCheckout');
 }
 
 function handleExtend(room) {
+    if (currentRole !== 'admin') return;
     const rental = getLatestRentalForRoom(room);
     if (!rental) return;
     const response = prompt(replacePlaceholders(translate('extendPrompt'), { room }), rental.checkOut ?? '');
@@ -627,6 +637,7 @@ function handleExtend(room) {
 }
 
 function handleArrive(room) {
+    if (currentRole !== 'admin') return;
     const rental = getLatestRentalForRoom(room);
     if (!rental) return;
     const confirmed = confirm(replacePlaceholders(translate('futureCheckinConfirm'), { room }));
@@ -669,7 +680,8 @@ function calculateMonthlyRevenue() {
     const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
     let total = 0;
 
-    state.rentals.forEach((rental) => {
+    const rentals = [...state.rentals, ...state.history];
+    rentals.forEach((rental) => {
         const start = parseDate(rental.checkIn);
         const end = rental.checkOut ? parseDate(rental.checkOut) : startOfDay(new Date());
         if (end <= monthStart || start >= monthEnd) return;
@@ -707,7 +719,7 @@ function getExpiringRentals() {
 
 function exportCsvReport() {
     const header = translations[state.language].csvHeader;
-    const rows = state.rentals.map((rental) => {
+    const rows = [...state.rentals, ...state.history].map((rental) => {
         const charge = calculateCharge(rental.checkIn, rental.checkOut);
         return [
             rental.room,
@@ -834,6 +846,7 @@ function loadState() {
         return {
             rentals: parsed.rentals ?? deepClone(defaultState.rentals),
             requests: parsed.requests ?? deepClone(defaultState.requests),
+            history: parsed.history ?? deepClone(defaultState.history),
             language: parsed.language ?? 'vi',
         };
     } catch (error) {
@@ -883,9 +896,19 @@ function replacePlaceholders(template, replacements) {
 }
 
 function showOverlay() {
+    resetAdminAccess();
     elements.overlay.style.display = 'grid';
 }
 
 function hideOverlay() {
     elements.overlay.style.display = 'none';
+}
+
+function resetAdminAccess() {
+    elements.roleSelection?.classList.remove('hidden');
+    elements.adminForm?.classList.add('hidden');
+    if (elements.adminPassword) {
+        elements.adminPassword.value = '';
+    }
+    elements.adminError?.classList.add('hidden');
 }
