@@ -141,6 +141,7 @@
                 <div class="section-title">
                     <h2 id="rental-form-heading" data-i18n="rentalFormTitle">Ghi nhận hợp đồng thuê</h2>
                 </div>
+                <p id="formNotice" class="form-notice hidden"></p>
                 <form id="rentalForm" class="form-grid">
                     <label>
                         <span data-i18n="formRoom">Chọn phòng</span>
@@ -174,46 +175,12 @@
                 <p class="form-hint" data-i18n="formHint">* Hệ thống tự động tính tiền dựa trên ngày nhận và trả phòng.</p>
             </section>
 
-            <section class="panel guest-only" aria-labelledby="request-heading">
+            <section class="panel" aria-labelledby="request-heading">
                 <div class="section-title">
-                    <h2 id="request-heading" data-i18n="requestTitle">Đăng ký phòng cho chuyên gia</h2>
+                    <h2 id="request-heading" data-i18n="requestListTitle">Yêu cầu đã gửi</h2>
+                    <span class="hint" data-i18n="requestListHint">Khách có thể theo dõi trạng thái phê duyệt.</span>
                 </div>
-                <form id="requestForm" class="form-grid">
-                    <label>
-                        <span data-i18n="requestName">Tên chuyên gia</span>
-                        <input type="text" id="requestGuest" name="requestGuest" required>
-                    </label>
-                    <label>
-                        <span data-i18n="requestEmail">Email liên hệ</span>
-                        <input type="email" id="requestEmail" name="requestEmail" required>
-                    </label>
-                    <label>
-                        <span data-i18n="requestRoom">Phòng mong muốn</span>
-                        <select id="requestRoom" name="requestRoom"></select>
-                    </label>
-                    <label>
-                        <span data-i18n="requestCheckin">Ngày nhận</span>
-                        <input type="date" id="requestCheckIn" name="requestCheckIn" required>
-                    </label>
-                    <label>
-                        <span data-i18n="requestCheckout">Ngày trả dự kiến</span>
-                        <input type="date" id="requestCheckOut" name="requestCheckOut" required>
-                    </label>
-                    <label>
-                        <span data-i18n="requestNotes">Ghi chú thêm</span>
-                        <textarea id="requestNotes" name="requestNotes" rows="2" placeholder="Ví dụ: cần đưa đón..." data-i18n-placeholder="requestNotesPlaceholder"></textarea>
-                    </label>
-                    <div class="form-actions">
-                        <button type="submit" class="primary" data-i18n="requestSubmit">Gửi yêu cầu</button>
-                        <button type="reset" class="ghost" data-i18n="formReset">Xóa thông tin</button>
-                    </div>
-                </form>
-                <section class="panel" aria-labelledby="request-list-heading">
-                    <div class="section-title">
-                        <h3 id="request-list-heading" data-i18n="requestListTitle">Yêu cầu đã gửi</h3>
-                    </div>
-                    <ul id="requestList" class="card-list"></ul>
-                </section>
+                <ul id="requestList" class="card-list"></ul>
             </section>
         </section>
 
@@ -243,17 +210,6 @@
             </div>
         </section>
     </main>
-
-    <template id="requestCardTemplate">
-        <li class="card">
-            <div>
-                <h4 class="card-title"></h4>
-                <p class="card-subtitle"></p>
-                <p class="card-dates"></p>
-                <p class="card-notes"></p>
-            </div>
-        </li>
-    </template>
 
     <template id="expiringCardTemplate">
         <li class="card warning">

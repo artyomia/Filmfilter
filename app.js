@@ -5,7 +5,7 @@ const ROOM_NUMBERS = [
 
 const DAILY_RATE = 300_000;
 const MONTHLY_RATE = 5_200_000;
-const STORAGE_KEY = 'jsc-dormitory-state-v2';
+const STORAGE_KEY = 'jsc-dormitory-state-v3';
 const ADMIN_PASSWORD = 'jscbauxeo';
 const DATE_OPTIONS = { year: 'numeric', month: '2-digit', day: '2-digit' };
 
@@ -57,16 +57,15 @@ const translations = {
         formSubmit: 'Lưu hợp đồng',
         formReset: 'Xóa thông tin',
         formHint: '* Hệ thống tự động tính tiền dựa trên ngày nhận và trả phòng.',
-        requestTitle: 'Đăng ký phòng cho chuyên gia',
-        requestName: 'Tên chuyên gia',
-        requestEmail: 'Email liên hệ',
-        requestRoom: 'Phòng mong muốn',
-        requestCheckin: 'Ngày nhận',
-        requestCheckout: 'Ngày trả dự kiến',
-        requestNotes: 'Ghi chú thêm',
-        requestNotesPlaceholder: 'Ví dụ: cần đưa đón sân bay',
-        requestSubmit: 'Gửi yêu cầu',
         requestListTitle: 'Yêu cầu đã gửi',
+        requestListHint: 'Khách có thể theo dõi trạng thái phê duyệt.',
+        requestListEmpty: 'Chưa có yêu cầu nào.',
+        requestStatusPending: 'Đang chờ duyệt',
+        requestStatusApproved: 'Đã duyệt',
+        requestStatusRejected: 'Từ chối',
+        requestActionEdit: 'Chỉnh sửa',
+        requestActionApprove: 'Duyệt',
+        requestActionReject: 'Từ chối',
         historyTitle: 'Lưu trữ trả phòng',
         historyHint: 'Chỉ hiển thị cho quản trị viên',
         historyEmpty: 'Chưa có phòng nào được trả.',
@@ -84,6 +83,10 @@ const translations = {
         extendInvalid: 'Ngày trả phòng mới phải sau ngày nhận phòng hiện tại.',
         toastSaved: 'Đã lưu hợp đồng mới.',
         toastRequestSaved: 'Đã gửi yêu cầu đặt phòng.',
+        toastRequestUpdated: 'Đã cập nhật yêu cầu.',
+        toastRequestApproved: 'Đã duyệt yêu cầu và tạo hợp đồng.',
+        toastRequestRejected: 'Đã từ chối yêu cầu.',
+        toastRequestLocked: 'Yêu cầu đã được duyệt, không thể chỉnh sửa.',
         toastCheckout: 'Đã cập nhật trả phòng.',
         toastExtend: 'Đã gia hạn thời gian lưu trú.',
         toastReset: 'Đã làm mới dữ liệu trống.',
@@ -92,7 +95,17 @@ const translations = {
         csvHeader: ['Phòng', 'Khách thuê', 'Chức vụ', 'Ngày nhận', 'Ngày trả', 'Số ngày', 'Thành tiền (VND)', 'Ghi chú'],
         csvTitle: 'bao_cao_ky_tuc_xa.csv',
         validationDate: 'Ngày trả phòng phải sau ngày nhận phòng.',
-        futureCheckinConfirm: 'Xác nhận khách đã nhận phòng cho phòng {room}?'
+        futureCheckinConfirm: 'Xác nhận khách đã nhận phòng cho phòng {room}?',
+        requestApproveConfirm: 'Xác nhận duyệt yêu cầu cho phòng {room}?',
+        requestRejectConfirm: 'Từ chối yêu cầu cho phòng {room}?',
+        formSubmitAdmin: 'Lưu hợp đồng',
+        formSubmitAdminUpdate: 'Cập nhật yêu cầu',
+        formSubmitGuest: 'Gửi yêu cầu',
+        formSubmitGuestUpdate: 'Cập nhật yêu cầu',
+        formHintAdmin: '* Hệ thống tự động tính tiền dựa trên ngày nhận và trả phòng.',
+        formHintGuest: '* Yêu cầu sẽ được gửi tới quản trị viên để xét duyệt.',
+        formNoticeEditing: 'Đang chỉnh sửa yêu cầu cho phòng {room}.',
+        requestUpdatedAt: 'Cập nhật: {date}'
     },
     en: {
         loginTitle: 'Select access role',
@@ -141,16 +154,15 @@ const translations = {
         formSubmit: 'Save agreement',
         formReset: 'Clear form',
         formHint: '* The system calculates fees automatically from check-in/check-out dates.',
-        requestTitle: 'Request a room for experts',
-        requestName: 'Expert name',
-        requestEmail: 'Contact email',
-        requestRoom: 'Preferred room',
-        requestCheckin: 'Check-in date',
-        requestCheckout: 'Planned check-out',
-        requestNotes: 'Extra notes',
-        requestNotesPlaceholder: 'E.g. needs airport pick-up',
-        requestSubmit: 'Send request',
         requestListTitle: 'Submitted requests',
+        requestListHint: 'Guests can monitor approval status.',
+        requestListEmpty: 'No requests yet.',
+        requestStatusPending: 'Pending',
+        requestStatusApproved: 'Approved',
+        requestStatusRejected: 'Rejected',
+        requestActionEdit: 'Edit',
+        requestActionApprove: 'Approve',
+        requestActionReject: 'Reject',
         historyTitle: 'Check-out archive',
         historyHint: 'Visible to administrators only',
         historyEmpty: 'No completed stays yet.',
@@ -168,6 +180,10 @@ const translations = {
         extendInvalid: 'New check-out date must be after the current check-in date.',
         toastSaved: 'Rental agreement saved.',
         toastRequestSaved: 'Booking request submitted.',
+        toastRequestUpdated: 'Request updated.',
+        toastRequestApproved: 'Request approved and converted to an agreement.',
+        toastRequestRejected: 'Request rejected.',
+        toastRequestLocked: 'Approved requests cannot be edited.',
         toastCheckout: 'Check-out updated.',
         toastExtend: 'Stay extended.',
         toastReset: 'Blank dataset restored.',
@@ -176,7 +192,17 @@ const translations = {
         csvHeader: ['Room', 'Guest', 'Position', 'Check-in', 'Check-out', 'Nights', 'Amount (VND)', 'Notes'],
         csvTitle: 'dormitory_report.csv',
         validationDate: 'Check-out date must be after check-in date.',
-        futureCheckinConfirm: 'Confirm the guest has checked in to room {room}?'
+        futureCheckinConfirm: 'Confirm the guest has checked in to room {room}?',
+        requestApproveConfirm: 'Approve the request for room {room}?',
+        requestRejectConfirm: 'Reject the request for room {room}?',
+        formSubmitAdmin: 'Save agreement',
+        formSubmitAdminUpdate: 'Update request',
+        formSubmitGuest: 'Submit request',
+        formSubmitGuestUpdate: 'Update request',
+        formHintAdmin: '* The system calculates fees automatically from check-in/check-out dates.',
+        formHintGuest: '* Your request will wait for administrator approval before assignment.',
+        formNoticeEditing: 'Editing request for room {room}.',
+        requestUpdatedAt: 'Updated: {date}'
     }
 };
 
@@ -206,6 +232,17 @@ if (!Array.isArray(state.history)) {
     state.history = [];
 }
 let currentRole = null;
+let editingRequestId = null;
+
+state.requests = state.requests.map((request) => ({
+    ...request,
+    status: request.status ?? 'pending',
+    checkOut: request.checkOut || null,
+    notes: request.notes ?? '',
+    guestRole: request.guestRole ?? '',
+    createdAt: request.createdAt ?? new Date().toISOString(),
+    updatedAt: request.updatedAt ?? request.createdAt ?? new Date().toISOString(),
+}));
 
 const elements = {
     overlay: document.getElementById('login-overlay'),
@@ -227,12 +264,18 @@ const elements = {
     rentalForm: document.getElementById('rentalForm'),
     roomSelect: document.getElementById('roomSelect'),
     statusFilter: document.getElementById('statusFilter'),
-    requestForm: document.getElementById('requestForm'),
     requestList: document.getElementById('requestList'),
-    requestRoom: document.getElementById('requestRoom'),
     exportCsv: document.getElementById('exportCsv'),
     resetData: document.getElementById('resetData'),
     langButtons: document.querySelectorAll('.language-switcher .lang'),
+    formNotice: document.getElementById('formNotice'),
+    formSubmit: document.querySelector('#rentalForm button[type="submit"]'),
+    formHint: document.querySelector('.form-hint'),
+    guestName: document.getElementById('guestName'),
+    guestRole: document.getElementById('guestRole'),
+    checkIn: document.getElementById('checkIn'),
+    checkOut: document.getElementById('checkOut'),
+    notes: document.getElementById('notes'),
 };
 
 init();
@@ -240,8 +283,7 @@ init();
 function init() {
     attachEventListeners();
     applyLanguage(state.language);
-    populateRoomSelectors();
-    renderAll();
+    updateRoleUI();
     showOverlay();
 }
 
@@ -268,6 +310,7 @@ function attachEventListeners() {
             document.body.classList.remove('guest-mode');
             hideOverlay();
             renderAll();
+            updateRoleUI();
         } else {
             elements.adminError?.classList.remove('hidden');
             elements.adminPassword?.focus();
@@ -284,30 +327,41 @@ function attachEventListeners() {
         document.body.classList.add('guest-mode');
         hideOverlay();
         renderAll();
+        updateRoleUI();
     });
 
     elements.logout?.addEventListener('click', () => {
         currentRole = null;
         document.body.classList.remove('guest-mode');
+        clearEditingRequest();
         showOverlay();
         renderAll();
+        updateRoleUI();
     });
 
     elements.rentalForm.addEventListener('submit', (event) => {
         event.preventDefault();
-        if (currentRole === 'guest') return;
-
         const formData = new FormData(elements.rentalForm);
         const room = formData.get('roomSelect') ?? elements.roomSelect.value;
-        const guestName = formData.get('guestName') ?? document.getElementById('guestName').value.trim();
-        const guestRole = formData.get('guestRole') ?? document.getElementById('guestRole').value.trim();
-        const checkIn = formData.get('checkIn') ?? document.getElementById('checkIn').value;
-        const checkOut = formData.get('checkOut') ?? document.getElementById('checkOut').value;
-        const notes = formData.get('notes') ?? document.getElementById('notes').value.trim();
+        const guestName = (formData.get('guestName') ?? elements.guestName?.value ?? '').toString().trim();
+        const guestRole = (formData.get('guestRole') ?? elements.guestRole?.value ?? '').toString().trim();
+        const checkIn = (formData.get('checkIn') ?? elements.checkIn?.value ?? '').toString();
+        const checkOut = (formData.get('checkOut') ?? elements.checkOut?.value ?? '').toString();
+        const notes = (formData.get('notes') ?? elements.notes?.value ?? '').toString().trim();
 
         if (!guestName || !checkIn) return;
         if (checkOut && parseDate(checkOut) <= parseDate(checkIn)) {
             toast('validationDate');
+            return;
+        }
+
+        if (currentRole === 'guest') {
+            handleGuestRequestSubmission({ room, guestName, guestRole, checkIn, checkOut, notes });
+            return;
+        }
+
+        if (editingRequestId) {
+            handleAdminRequestUpdate({ room, guestName, guestRole, checkIn, checkOut, notes });
             return;
         }
 
@@ -325,53 +379,45 @@ function attachEventListeners() {
         elements.rentalForm.reset();
         populateRoomSelectors();
         renderAll();
+        updateRoleUI();
         toast('toastSaved');
     });
 
     elements.statusFilter.addEventListener('change', renderRoomTable);
 
-    elements.requestForm?.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const formData = new FormData(elements.requestForm);
-        const guestName = formData.get('requestGuest')?.toString().trim();
-        const email = formData.get('requestEmail')?.toString().trim();
-        const room = formData.get('requestRoom')?.toString();
-        const checkIn = formData.get('requestCheckIn')?.toString();
-        const checkOut = formData.get('requestCheckOut')?.toString();
-        const notes = formData.get('requestNotes')?.toString().trim() ?? '';
+    elements.rentalForm.addEventListener('reset', () => {
+        clearEditingRequest(false);
+    });
 
-        if (!guestName || !email || !checkIn || !checkOut) {
-            return;
+    elements.requestList?.addEventListener('click', (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const button = target.closest('button[data-request-action]');
+        if (!(button instanceof HTMLElement)) return;
+        const action = button.dataset.requestAction;
+        const id = button.dataset.requestId;
+        if (!action || !id) return;
+        switch (action) {
+            case 'edit':
+                startEditRequest(id);
+                break;
+            case 'approve':
+                handleApproveRequest(id);
+                break;
+            case 'reject':
+                handleRejectRequest(id);
+                break;
         }
-
-        if (parseDate(checkOut) <= parseDate(checkIn)) {
-            toast('validationDate');
-            return;
-        }
-
-        state.requests.push({
-            id: createId(),
-            guestName,
-            email,
-            room,
-            checkIn,
-            checkOut,
-            notes,
-            createdAt: new Date().toISOString(),
-        });
-        saveState();
-        elements.requestForm.reset();
-        renderRequests();
-        renderDashboard();
-        toast('toastRequestSaved');
     });
 
     elements.exportCsv.addEventListener('click', exportCsvReport);
     elements.resetData.addEventListener('click', () => {
         state = deepClone(defaultState);
+        clearEditingRequest();
         saveState();
         populateRoomSelectors();
         renderAll();
+        updateRoleUI();
         toast('toastReset');
     });
 
@@ -448,7 +494,8 @@ function renderDashboard() {
     const revenue = calculateMonthlyRevenue();
     elements.monthlyRevenue.textContent = formatCurrency(revenue, state.language);
 
-    elements.requestCount.textContent = state.requests.length.toString();
+    const pendingRequests = state.requests.filter((request) => (request.status ?? 'pending') === 'pending');
+    elements.requestCount.textContent = pendingRequests.length.toString();
 }
 
 function renderRoomTable() {
@@ -502,28 +549,342 @@ function renderExpiring() {
 }
 
 function renderRequests() {
-    if (!elements.requestList) return;
-    elements.requestList.innerHTML = '';
-    const template = document.getElementById('requestCardTemplate');
-    if (!(template instanceof HTMLTemplateElement)) return;
+    const list = elements.requestList;
+    if (!list) return;
+    list.innerHTML = '';
 
-    const requests = state.requests.slice().sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    const requests = state.requests
+        .slice()
+        .sort((a, b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
+
     if (!requests.length) {
         const empty = document.createElement('li');
         empty.className = 'card empty';
-        empty.textContent = '—';
-        elements.requestList.appendChild(empty);
+        empty.textContent = translate('requestListEmpty');
+        list.appendChild(empty);
         return;
     }
 
     requests.forEach((request) => {
-        const clone = template.content.cloneNode(true);
-        clone.querySelector('.card-title').textContent = `${request.room || '---'} · ${request.guestName}`;
-        clone.querySelector('.card-subtitle').textContent = request.email;
-        clone.querySelector('.card-dates').textContent = `${formatDate(request.checkIn)} → ${formatDate(request.checkOut)}`;
-        clone.querySelector('.card-notes').textContent = request.notes || '—';
-        elements.requestList.appendChild(clone);
+        const status = request.status ?? 'pending';
+        const item = document.createElement('li');
+        item.className = 'card request-card';
+        item.dataset.status = status;
+
+        const header = document.createElement('div');
+        header.className = 'request-header';
+
+        const title = document.createElement('h4');
+        title.className = 'card-title';
+        title.textContent = `${request.room || '---'} · ${request.guestName}`;
+
+        const statusTag = document.createElement('span');
+        statusTag.className = `request-status ${status}`;
+        statusTag.textContent = translateRequestStatus(status);
+
+        header.append(title, statusTag);
+        item.appendChild(header);
+
+        const meta = document.createElement('div');
+        meta.className = 'request-meta';
+
+        const dates = document.createElement('p');
+        const checkIn = request.checkIn ? formatDate(request.checkIn) : '—';
+        const checkOut = request.checkOut ? formatDate(request.checkOut) : '—';
+        dates.textContent = `${translate('formCheckin')}: ${checkIn} · ${translate('formCheckout')}: ${checkOut}`;
+        meta.appendChild(dates);
+
+        if (request.guestRole) {
+            const role = document.createElement('p');
+            role.textContent = `${translate('formPosition')}: ${request.guestRole}`;
+            meta.appendChild(role);
+        }
+
+        if (request.notes) {
+            const note = document.createElement('p');
+            note.textContent = `${translate('formNotes')}: ${request.notes}`;
+            meta.appendChild(note);
+        }
+
+        const updatedLabel = request.updatedAt ?? request.createdAt;
+        if (updatedLabel) {
+            const updated = document.createElement('p');
+            updated.textContent = replacePlaceholders(translate('requestUpdatedAt'), {
+                date: formatDate(updatedLabel),
+            });
+            meta.appendChild(updated);
+        }
+
+        item.appendChild(meta);
+
+        const actions = buildRequestActions(request);
+        if (actions) {
+            item.appendChild(actions);
+        }
+
+        list.appendChild(item);
     });
+}
+
+function buildRequestActions(request) {
+    const role = currentRole ?? 'admin';
+    const status = request.status ?? 'pending';
+    const container = document.createElement('div');
+    container.className = 'request-actions';
+
+    if (role === 'guest' && status === 'pending') {
+        container.appendChild(createRequestActionButton('requestActionEdit', 'edit', request.id));
+    }
+
+    if (role === 'admin') {
+        if (status === 'pending') {
+            container.appendChild(createRequestActionButton('requestActionEdit', 'edit', request.id));
+            container.appendChild(createRequestActionButton('requestActionApprove', 'approve', request.id, 'primary'));
+            container.appendChild(createRequestActionButton('requestActionReject', 'reject', request.id, 'ghost danger'));
+        }
+    }
+
+    return container.childElementCount ? container : null;
+}
+
+function createRequestActionButton(labelKey, action, id, className = 'ghost') {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = className;
+    button.dataset.requestAction = action;
+    button.dataset.requestId = id;
+    button.textContent = translate(labelKey);
+    return button;
+}
+
+function translateRequestStatus(status, lang = state.language) {
+    switch (status) {
+        case 'approved':
+            return translate('requestStatusApproved', lang);
+        case 'rejected':
+            return translate('requestStatusRejected', lang);
+        default:
+            return translate('requestStatusPending', lang);
+    }
+}
+
+function getRequestById(id) {
+    return state.requests.find((request) => request.id === id) ?? null;
+}
+
+function handleGuestRequestSubmission({ room, guestName, guestRole, checkIn, checkOut, notes }) {
+    const normalized = {
+        room,
+        guestName,
+        guestRole,
+        checkIn,
+        checkOut: checkOut || null,
+        notes,
+    };
+
+    if (editingRequestId) {
+        const request = getRequestById(editingRequestId);
+        if (!request) {
+            clearEditingRequest();
+            renderRequests();
+            renderDashboard();
+            return;
+        }
+        if (request.status !== 'pending') {
+            toast('toastRequestLocked');
+            clearEditingRequest();
+            renderRequests();
+            return;
+        }
+
+        Object.assign(request, normalized);
+        request.updatedAt = new Date().toISOString();
+        saveState();
+        clearEditingRequest();
+        renderRequests();
+        renderDashboard();
+        toast('toastRequestUpdated');
+        return;
+    }
+
+    state.requests.push({
+        id: createId(),
+        ...normalized,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    });
+    saveState();
+    elements.rentalForm.reset();
+    renderRequests();
+    renderDashboard();
+    updateRoleUI();
+    toast('toastRequestSaved');
+}
+
+function handleAdminRequestUpdate({ room, guestName, guestRole, checkIn, checkOut, notes }) {
+    if (!editingRequestId) return;
+    const request = getRequestById(editingRequestId);
+    if (!request) {
+        clearEditingRequest();
+        return;
+    }
+    if (request.status !== 'pending') {
+        toast('toastRequestLocked');
+        clearEditingRequest();
+        renderRequests();
+        return;
+    }
+
+    Object.assign(request, {
+        room,
+        guestName,
+        guestRole,
+        checkIn,
+        checkOut: checkOut || null,
+        notes,
+    });
+    request.updatedAt = new Date().toISOString();
+    saveState();
+    clearEditingRequest();
+    renderRequests();
+    renderDashboard();
+    toast('toastRequestUpdated');
+}
+
+function startEditRequest(id) {
+    const request = getRequestById(id);
+    if (!request) return;
+    if (request.status !== 'pending') {
+        toast('toastRequestLocked');
+        return;
+    }
+
+    editingRequestId = request.id;
+    populateRoomSelectors();
+
+    if (elements.roomSelect) {
+        const options = Array.from(elements.roomSelect.options || []);
+        const currentOption = options.find((option) => option.value === request.room);
+        if (currentOption) {
+            currentOption.disabled = false;
+        }
+        elements.roomSelect.value = request.room;
+    }
+    if (elements.guestName) elements.guestName.value = request.guestName ?? '';
+    if (elements.guestRole) elements.guestRole.value = request.guestRole ?? '';
+    if (elements.checkIn) elements.checkIn.value = request.checkIn ?? '';
+    if (elements.checkOut) elements.checkOut.value = request.checkOut ?? '';
+    if (elements.notes) elements.notes.value = request.notes ?? '';
+
+    updateRoleUI();
+    elements.guestName?.focus?.();
+}
+
+function clearEditingRequest(resetForm = true) {
+    if (resetForm) {
+        elements.rentalForm?.reset();
+    }
+    editingRequestId = null;
+    populateRoomSelectors();
+    updateRoleUI();
+}
+
+function handleApproveRequest(id) {
+    if (currentRole !== 'admin') return;
+    const request = getRequestById(id);
+    if (!request || request.status !== 'pending') return;
+    const confirmed = confirm(replacePlaceholders(translate('requestApproveConfirm'), { room: request.room }));
+    if (!confirmed) return;
+
+    const rental = {
+        id: createId(),
+        room: request.room,
+        guestName: request.guestName,
+        guestRole: request.guestRole,
+        checkIn: request.checkIn,
+        checkOut: request.checkOut || null,
+        notes: request.notes,
+        sourceRequestId: request.id,
+    };
+
+    state.rentals.push(rental);
+    request.status = 'approved';
+    request.linkedRentalId = rental.id;
+    request.updatedAt = new Date().toISOString();
+    saveState();
+
+    if (editingRequestId === id) {
+        clearEditingRequest();
+    }
+
+    populateRoomSelectors();
+    renderAll();
+    updateRoleUI();
+    toast('toastRequestApproved');
+}
+
+function handleRejectRequest(id) {
+    if (currentRole !== 'admin') return;
+    const request = getRequestById(id);
+    if (!request || request.status !== 'pending') return;
+    const confirmed = confirm(replacePlaceholders(translate('requestRejectConfirm'), { room: request.room }));
+    if (!confirmed) return;
+
+    request.status = 'rejected';
+    request.updatedAt = new Date().toISOString();
+    saveState();
+
+    if (editingRequestId === id) {
+        clearEditingRequest();
+    } else {
+        updateRoleUI();
+    }
+
+    renderRequests();
+    renderDashboard();
+    toast('toastRequestRejected');
+}
+
+function updateRoleUI() {
+    const role = currentRole ?? 'admin';
+    document.body.classList.toggle('guest-mode', role === 'guest');
+    updateFormCopy(role);
+}
+
+function updateFormCopy(role = currentRole ?? 'admin') {
+    const submit = elements.formSubmit;
+    const hint = elements.formHint;
+    const notice = elements.formNotice;
+    const activeRequest = editingRequestId ? getRequestById(editingRequestId) : null;
+    const isEditingPending = Boolean(activeRequest && activeRequest.status === 'pending');
+
+    if (submit) {
+        let key;
+        if (role === 'guest') {
+            key = isEditingPending ? 'formSubmitGuestUpdate' : 'formSubmitGuest';
+        } else if (isEditingPending) {
+            key = 'formSubmitAdminUpdate';
+        } else {
+            key = 'formSubmitAdmin';
+        }
+        submit.textContent = translate(key);
+    }
+
+    if (hint) {
+        const hintKey = role === 'guest' ? 'formHintGuest' : 'formHintAdmin';
+        hint.textContent = translate(hintKey);
+    }
+
+    if (notice) {
+        if (isEditingPending && activeRequest) {
+            notice.textContent = replacePlaceholders(translate('formNoticeEditing'), { room: activeRequest.room });
+            notice.classList.remove('hidden');
+        } else {
+            notice.classList.add('hidden');
+            notice.textContent = '';
+        }
+    }
 }
 
 function renderHistory() {
@@ -770,7 +1131,9 @@ function applyLanguage(lang) {
         el.setAttribute('placeholder', translate(key, lang));
     });
 
+    populateRoomSelectors();
     renderAll();
+    updateRoleUI();
 }
 
 function translate(key, lang = state.language) {

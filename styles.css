@@ -140,7 +140,7 @@ main {
 }
 
 #monthlyRevenue {
-    font-size: 1.6rem;
+    font-size: 1.25rem;
 }
 
 .stat-card p {
@@ -398,6 +398,16 @@ textarea {
     color: var(--muted);
 }
 
+.form-notice {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    background: rgba(37, 99, 235, 0.08);
+    color: #1d4ed8;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
 .card-list {
     display: grid;
     gap: 0.75rem;
@@ -429,6 +439,75 @@ textarea {
 .card-title {
     margin: 0 0 0.25rem;
     font-weight: 600;
+}
+
+.request-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.request-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.75rem;
+}
+
+.request-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.request-status.pending {
+    background: rgba(37, 99, 235, 0.12);
+    color: #1d4ed8;
+}
+
+.request-status.approved {
+    background: rgba(22, 163, 74, 0.12);
+    color: #15803d;
+}
+
+.request-status.rejected {
+    background: rgba(220, 38, 38, 0.12);
+    color: #b91c1c;
+}
+
+.request-meta {
+    display: grid;
+    gap: 0.25rem;
+    font-size: 0.93rem;
+    color: var(--muted);
+}
+
+.request-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.request-actions .ghost {
+    padding: 0.4rem 0.8rem;
+}
+
+.request-actions .primary {
+    padding: 0.45rem 0.9rem;
+}
+
+.request-actions .danger {
+    color: var(--danger);
+}
+
+.request-actions .danger:hover {
+    background: rgba(220, 38, 38, 0.12);
 }
 
 .card-subtitle,
@@ -515,30 +594,14 @@ textarea {
     margin: 0;
 }
 
-.guest-only {
-    display: none;
-}
-
-.guest-mode .guest-only {
-    display: flex;
-}
-
 .guest-mode .admin-only {
     display: none !important;
 }
 
-.guest-mode #rentalForm,
 .guest-mode #resetData,
-.guest-mode .actions button[data-action],
-.guest-mode #roomSelect,
-.guest-mode #notes,
-.guest-mode #checkOut,
-.guest-mode #guestRole,
-.guest-mode #guestName,
-.guest-mode #checkIn,
 .guest-mode .dashboard-actions button,
-.guest-mode .form-actions .primary,
-.guest-mode .panel .actions button {
+.guest-mode .panel .actions button,
+.guest-mode .actions button[data-action] {
     pointer-events: none;
     opacity: 0.5;
 }
